@@ -4,7 +4,7 @@ import * as React from "react";
 import { Check, Copy, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const SITE_URL = "https://devkit.tools"; // update when deployed
+const SITE_URL = "https://devkit-seven.vercel.app";
 
 const SHARE_OPTIONS = [
   {
