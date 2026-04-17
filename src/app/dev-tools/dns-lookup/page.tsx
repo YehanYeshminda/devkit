@@ -352,6 +352,8 @@ export default function DnsLookupPage() {
                 </p>
               )}
 
+              
+
               <div className="grid gap-2 border-t border-white/[0.06] pt-3 sm:grid-cols-2 lg:grid-cols-4">
                 <FlagRow label="Truncated (TC)" value={result.TC ? "yes" : "no"} />
                 <FlagRow label="Recursion desired (RD)" value={result.RD ? "yes" : "no"} />
