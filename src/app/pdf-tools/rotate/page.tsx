@@ -5,6 +5,7 @@ import { PDFDocument, degrees } from "pdf-lib";
 import { Check, Download, FileText, Loader2, RotateCcw, RotateCw, Upload, X } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import { canUsePdfApi, downloadBlob, postPdfForm, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
@@ -86,9 +87,32 @@ export default function RotatePdfPage() {
   }
 
   async function rotate() {
-    if (!sourceBuf) return;
+    if (!sourceBuf || !file) return;
     setProcessing(true); setError(""); setDone(false);
     try {
+      if (canUsePdfApi(file.size)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append(
+          "options",
+          JSON.stringify({
+            rotateAll,
+            selected0Based: Array.from(selected),
+            delta,
+          }),
+        );
+        const api = await postPdfForm("/api/pdf/rotate", fd);
+        if (api.ok) {
+          downloadBlob(api.blob, api.filenameHint ?? file.name.replace(/\.pdf$/i, "-rotated.pdf"));
+          setDone(true);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
+
       const doc = await PDFDocument.load(sourceBuf, { ignoreEncryption: true });
       const pages = doc.getPages();
       const targets = rotateAll ? pages : pages.filter((_, i) => selected.has(i));
@@ -97,7 +121,7 @@ export default function RotatePdfPage() {
         page.setRotation(degrees((cur + delta) % 360));
       });
       const bytes = await doc.save();
-      downloadPdf(bytes, file!.name.replace(/\.pdf$/i, "-rotated.pdf"));
+      downloadPdf(bytes, file.name.replace(/\.pdf$/i, "-rotated.pdf"));
       setDone(true);
     } catch (e) { setError(String(e)); }
     finally { setProcessing(false); }
@@ -112,7 +136,7 @@ export default function RotatePdfPage() {
         <div className="mb-6">
           <p className="mb-1.5 text-xs text-muted-foreground">PDF Tools / Rotate PDF</p>
           <h1 className="text-2xl font-semibold tracking-tight">Rotate PDF</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Rotate all or selected pages by 90°, 180°, or 270°. Processed locally using pdf-lib.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Rotate all or selected pages by 90°, 180°, or 270°. Files under ~3.6MB may use the server; otherwise pdf-lib runs in your browser.</p>
         </div>
 
         <div className="space-y-5">

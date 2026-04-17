@@ -161,7 +161,9 @@ function RecordTable({
     <div className="overflow-hidden rounded-xl border border-white/10">
       <div className="border-b border-white/10 bg-white/[0.03] px-3 py-2">
         <span className="text-xs font-semibold text-foreground">{title}</span>
-        <span className="ml-2 text-xs text-muted-foreground">({rows.length})</span>
+        <span className="ml-2 text-xs text-muted-foreground">
+          ({rows.length})
+        </span>
       </div>
       <div className="divide-y divide-white/[0.06]">
         {rows.map((rr, i) => {
@@ -181,11 +183,17 @@ function RecordTable({
                     {typeLabel}
                   </span>
                   {rr.TTL != null && (
-                    <span className="text-[10px] text-muted-foreground/60">TTL {rr.TTL}s</span>
+                    <span className="text-[10px] text-muted-foreground/60">
+                      TTL {rr.TTL}s
+                    </span>
                   )}
                 </div>
-                <p className="break-all font-mono text-xs text-foreground">{rr.data}</p>
-                <p className="truncate text-[10px] text-muted-foreground/50">{rr.name}</p>
+                <p className="break-all font-mono text-xs text-foreground">
+                  {rr.data}
+                </p>
+                <p className="truncate text-[10px] text-muted-foreground/50">
+                  {rr.name}
+                </p>
               </div>
               <CopyBtn text={copyText} />
             </div>
@@ -244,7 +252,7 @@ export default function DnsLookupPage() {
 
   const statusLabel =
     result != null
-      ? DNS_STATUS[result.Status] ?? `Unknown status (${result.Status})`
+      ? (DNS_STATUS[result.Status] ?? `Unknown status (${result.Status})`)
       : "";
 
   return (
@@ -252,12 +260,14 @@ export default function DnsLookupPage() {
       <SiteHeader />
       <main className="flex-1 px-5 py-8 sm:px-8 lg:px-10">
         <div className="mb-6">
-          <p className="mb-1.5 text-xs text-muted-foreground">Developer Tools / DNS Lookup</p>
+          <p className="mb-1.5 text-xs text-muted-foreground">
+            Developer Tools / DNS Lookup
+          </p>
           <h1 className="text-2xl font-semibold tracking-tight">DNS Lookup</h1>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Resolve DNS records for any hostname. Queries go to{" "}
-            <span className="text-foreground/80">Google Public DNS</span> over HTTPS (JSON API) —
-            no API key, no server round-trip through DevKit.
+            <span className="text-foreground/80">Google Public DNS</span> over
+            HTTPS (JSON API) — no API key, no server round-trip through DevKit.
           </p>
         </div>
 
@@ -328,7 +338,9 @@ export default function DnsLookupPage() {
           <div className="space-y-6">
             <div className="rounded-xl border border-white/10 bg-card/60 p-4">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <span className="font-mono text-sm text-foreground">{resolvedName}</span>
+                <span className="font-mono text-sm text-foreground">
+                  {resolvedName}
+                </span>
                 <span
                   className={cn(
                     "rounded-full px-2.5 py-0.5 text-[10px] font-semibold",
@@ -347,18 +359,30 @@ export default function DnsLookupPage() {
                 <p className="mb-3 text-xs text-muted-foreground">
                   Question:{" "}
                   <span className="font-mono text-foreground/90">
-                    {result.Question.map((q) => `${q.name} ${rrTypeName(q.type)}`).join(" · ")}
+                    {result.Question.map(
+                      (q) => `${q.name} ${rrTypeName(q.type)}`,
+                    ).join(" · ")}
                   </span>
                 </p>
               )}
 
-              
-
               <div className="grid gap-2 border-t border-white/[0.06] pt-3 sm:grid-cols-2 lg:grid-cols-4">
-                <FlagRow label="Truncated (TC)" value={result.TC ? "yes" : "no"} />
-                <FlagRow label="Recursion desired (RD)" value={result.RD ? "yes" : "no"} />
-                <FlagRow label="Recursion available (RA)" value={result.RA ? "yes" : "no"} />
-                <FlagRow label="DNSSEC authentic (AD)" value={result.AD ? "yes" : "no"} />
+                <FlagRow
+                  label="Truncated (TC)"
+                  value={result.TC ? "yes" : "no"}
+                />
+                <FlagRow
+                  label="Recursion desired (RD)"
+                  value={result.RD ? "yes" : "no"}
+                />
+                <FlagRow
+                  label="Recursion available (RA)"
+                  value={result.RA ? "yes" : "no"}
+                />
+                <FlagRow
+                  label="DNSSEC authentic (AD)"
+                  value={result.AD ? "yes" : "no"}
+                />
               </div>
 
               {result.Comment && (
@@ -373,8 +397,8 @@ export default function DnsLookupPage() {
             !result.Additional?.length &&
             result.Status === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No records returned for {recordType}. The name exists but this record type is empty
-                for this zone.
+                No records returned for {recordType}. The name exists but this
+                record type is empty for this zone.
               </p>
             ) : null}
 
@@ -384,7 +408,9 @@ export default function DnsLookupPage() {
 
             <div className="rounded-xl border border-white/10 bg-white/[0.02]">
               <div className="flex items-center justify-between border-b border-white/10 px-3 py-2">
-                <span className="text-xs font-semibold text-muted-foreground">Raw JSON</span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  Raw JSON
+                </span>
                 <CopyBtn text={JSON.stringify(result, null, 2)} />
               </div>
               <pre className="max-h-80 overflow-auto p-3 text-xs leading-relaxed text-muted-foreground">

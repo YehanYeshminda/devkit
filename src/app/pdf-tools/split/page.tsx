@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { Check, Download, FileText, Loader2, Upload, X } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import { canUsePdfApi, downloadBlob, postPdfForm, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
@@ -57,6 +58,7 @@ export default function SplitPdfPage() {
   const [everyN, setEveryN] = React.useState(1);
   const [processing, setProcessing] = React.useState(false);
   const [done, setDone] = React.useState(false);
+  const [deliveredAsZip, setDeliveredAsZip] = React.useState(false);
   const [error, setError] = React.useState("");
   const [progress, setProgress] = React.useState("");
   const [sourceBuf, setSourceBuf] = React.useState<ArrayBuffer | null>(null);
@@ -86,9 +88,29 @@ export default function SplitPdfPage() {
   const parsedRanges = mode === "every" ? computeEveryRanges() : (rangeStr ? parseRanges(rangeStr, pageCount) : null);
 
   async function split() {
-    if (!sourceBuf || !parsedRanges) return;
-    setProcessing(true); setError(""); setDone(false);
+    if (!sourceBuf || !file || !parsedRanges) return;
+    setProcessing(true); setError(""); setDone(false); setDeliveredAsZip(false);
     try {
+      if (canUsePdfApi(file.size)) {
+        setProgress("Splitting on server…");
+        const baseName = file.name.replace(/\.pdf$/i, "");
+        const parts = parsedRanges.map((r) => r.indices);
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("options", JSON.stringify({ baseName, parts }));
+        const api = await postPdfForm("/api/pdf/split", fd);
+        if (api.ok) {
+          downloadBlob(api.blob, api.filenameHint ?? `${baseName}-split.zip`);
+          setDeliveredAsZip(true);
+          setDone(true);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
+
       for (let i = 0; i < parsedRanges.length; i++) {
         const r = parsedRanges[i];
         setProgress(`Creating part ${i + 1} / ${parsedRanges.length}…`);
@@ -97,10 +119,11 @@ export default function SplitPdfPage() {
         const copied = await newDoc.copyPages(srcDoc, r.indices);
         copied.forEach((p) => newDoc.addPage(p));
         const bytes = await newDoc.save();
-        const baseName = file!.name.replace(/\.pdf$/i, "");
+        const baseName = file.name.replace(/\.pdf$/i, "");
         downloadPdf(bytes, `${baseName}-part${i + 1}.pdf`);
         if (i < parsedRanges.length - 1) await new Promise((r) => setTimeout(r, 250));
       }
+      setDeliveredAsZip(false);
       setDone(true);
     } catch (e) { setError(String(e)); }
     finally { setProcessing(false); setProgress(""); }
@@ -113,7 +136,7 @@ export default function SplitPdfPage() {
         <div className="mb-6">
           <p className="mb-1.5 text-xs text-muted-foreground">PDF Tools / Split PDF</p>
           <h1 className="text-2xl font-semibold tracking-tight">Split PDF</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Split a PDF into separate documents by page ranges or every N pages. Processed locally.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Split a PDF by page ranges or every N pages. Under ~3.6MB you may get a single ZIP from the server; larger PDFs download each part separately in the browser.</p>
         </div>
 
         <div className="space-y-5">
@@ -186,7 +209,12 @@ export default function SplitPdfPage() {
           )}
 
           {error && <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">{error}</p>}
-          {done && <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-400"><Check className="size-4" /> All parts downloaded.</div>}
+          {done && (
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-4 py-2.5 text-sm text-emerald-400">
+              <Check className="size-4" />
+              {deliveredAsZip ? "ZIP with all parts downloaded." : "All parts downloaded as separate PDFs."}
+            </div>
+          )}
 
           <button
             onClick={split}

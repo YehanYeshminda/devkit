@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { Check, Download, FileText, Loader2, Upload, X } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import { canUsePdfApi, postPdfForm, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
@@ -82,9 +83,26 @@ export default function CompressPdfPage() {
   }
 
   async function compress() {
-    if (!sourceBuf) return;
+    if (!sourceBuf || !file) return;
     setProcessing(true); setError(""); setResult(null);
     try {
+      if (canUsePdfApi(file.size)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("options", JSON.stringify({ removeMetadata, useObjectStreams }));
+        const api = await postPdfForm("/api/pdf/compress", fd);
+        if (api.ok) {
+          const ab = await api.blob.arrayBuffer();
+          const bytes = new Uint8Array(ab);
+          setResult({ bytes, size: bytes.byteLength });
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
+
       const doc = await PDFDocument.load(sourceBuf, { ignoreEncryption: true });
       if (removeMetadata) {
         doc.setTitle(""); doc.setAuthor(""); doc.setSubject("");
@@ -111,7 +129,7 @@ export default function CompressPdfPage() {
         <div className="mb-6">
           <p className="mb-1.5 text-xs text-muted-foreground">PDF Tools / Compress PDF</p>
           <h1 className="text-2xl font-semibold tracking-tight">Compress PDF</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Reduce PDF file size by rewriting the internal structure and stripping unused metadata. Best results on text-heavy PDFs. Processed locally.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Reduce PDF file size by rewriting the internal structure and stripping unused metadata. Best results on text-heavy PDFs. Files under ~3.6MB may compress on the server; larger files stay in your browser.</p>
         </div>
 
         <div className="space-y-5">

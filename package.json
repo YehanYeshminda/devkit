@@ -20,6 +20,7 @@
     "clsx": "^2.1.1",
     "cronstrue": "^3.14.0",
     "diff": "^9.0.0",
+    "fflate": "^0.8.2",
     "lucide-react": "^1.8.0",
     "marked": "^18.0.0",
     "next": "14.2.5",
@@ -27,6 +28,7 @@
     "prism-react-renderer": "^2.4.1",
     "react": "^18",
     "react-dom": "^18",
+    "sharp": "^0.34.5",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7"
   },

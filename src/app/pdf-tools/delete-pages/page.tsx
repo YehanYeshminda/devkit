@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { Check, Download, FileText, Loader2, Upload, X } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import { canUsePdfApi, downloadBlob, postPdfForm, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
@@ -77,16 +78,32 @@ export default function DeletePagesPage() {
   }
 
   async function deletePages() {
-    if (!sourceBuf || selected.size === 0) return;
+    if (!sourceBuf || !file || selected.size === 0) return;
     if (selected.size === pageCount) { setError("Cannot delete all pages — at least one page must remain."); return; }
     setProcessing(true); setError(""); setDone(false);
     try {
+      if (canUsePdfApi(file.size)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("options", JSON.stringify({ indices: Array.from(selected) }));
+        const api = await postPdfForm("/api/pdf/delete-pages", fd);
+        if (api.ok) {
+          downloadBlob(api.blob, api.filenameHint ?? file.name.replace(/\.pdf$/i, "-edited.pdf"));
+          setDone(true);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
+
       const doc = await PDFDocument.load(sourceBuf, { ignoreEncryption: true });
       // Delete from highest index first to avoid index shifting
       const toDelete = Array.from(selected).sort((a, b) => b - a);
       toDelete.forEach((i) => doc.removePage(i));
       const bytes = await doc.save();
-      downloadPdf(bytes, file!.name.replace(/\.pdf$/i, "-edited.pdf"));
+      downloadPdf(bytes, file.name.replace(/\.pdf$/i, "-edited.pdf"));
       setDone(true);
     } catch (e) { setError(String(e)); }
     finally { setProcessing(false); }
@@ -102,7 +119,7 @@ export default function DeletePagesPage() {
         <div className="mb-6">
           <p className="mb-1.5 text-xs text-muted-foreground">PDF Tools / Delete Pages</p>
           <h1 className="text-2xl font-semibold tracking-tight">Delete Pages</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Select pages to remove from a PDF. The resulting document is downloaded locally — nothing is uploaded.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Select pages to remove from a PDF. Under ~3.6MB the file may be sent to our server for processing; larger PDFs are handled only in your browser.</p>
         </div>
 
         <div className="space-y-5">

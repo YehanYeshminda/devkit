@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { ArrowDown, ArrowUp, Check, Download, Loader2, Trash2, Upload } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import { canUsePdfApi, downloadBlob, postPdfForm, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
@@ -62,6 +63,23 @@ export default function MergePdfsPage() {
     if (files.length < 2) { setError("Add at least 2 PDF files."); return; }
     setProcessing(true); setError(""); setDone(false);
     try {
+      const totalBytes = files.reduce((s, f) => s + f.size, 0);
+      if (canUsePdfApi(totalBytes)) {
+        setProgress("Merging on server…");
+        const fd = new FormData();
+        for (const f of files) fd.append("file", f);
+        const api = await postPdfForm("/api/pdf/merge", fd);
+        if (api.ok) {
+          downloadBlob(api.blob, api.filenameHint ?? "merged.pdf");
+          setDone(true);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
+
       const merged = await PDFDocument.create();
       for (let i = 0; i < files.length; i++) {
         setProgress(`Loading ${i + 1} / ${files.length}…`);
@@ -90,7 +108,7 @@ export default function MergePdfsPage() {
         <div className="mb-6">
           <p className="mb-1.5 text-xs text-muted-foreground">PDF Tools / Merge PDFs</p>
           <h1 className="text-2xl font-semibold tracking-tight">Merge PDFs</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Combine multiple PDF files into a single document. Drag to reorder. All processing happens locally.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Combine multiple PDF files into a single document. Drag to reorder. Under ~3.6MB total size, merging may run on the server; otherwise it runs in your browser.</p>
         </div>
 
         <div className="space-y-5">

@@ -26,7 +26,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     href: "/converters",
     emoji: "🔄",
     tools: [
-      { name: "Base64 ↔ PDF",    description: "Convert any PDF to a Base64 string and back.",       href: "/converters/pdf",           status: "live", emoji: "📄", tags: ["PDF", "Base64"] },
+      { name: "Base64 ↔ PDF",    description: "PDF ↔ Base64 with optional small-file API and browser fallback.", href: "/converters/pdf", status: "live", emoji: "📄", tags: ["PDF", "Base64"] },
       { name: "Image ↔ Base64",  description: "Convert images to Base64 strings and back.",          href: "/converters/image-base64",  status: "live", emoji: "🖼️",  tags: ["Image", "Base64"] },
       { name: "Base64 ↔ Text",   description: "Encode and decode plain text as Base64 strings.",     href: "/converters/base64-text",   status: "live", emoji: "🔤", tags: ["Base64", "Text"] },
       { name: "JSON ↔ CSV",      description: "Convert between JSON arrays and CSV files.",           href: "/converters/json-csv",      status: "live", emoji: "📊", tags: ["JSON", "CSV"] },
@@ -35,7 +35,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   {
     id: "pdf-tools",
     name: "PDF Tools",
-    description: "Merge, split, rotate, and process PDF files — powered by pdf-lib, entirely in the browser.",
+    description: "Merge, split, rotate, and process PDF files with pdf-lib — small uploads can use the API; larger files stay in your browser.",
     href: "/pdf-tools",
     emoji: "📑",
     tools: [
@@ -50,13 +50,13 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   {
     id: "image-tools",
     name: "Image Tools",
-    description: "Resize, convert, and crop images in the browser.",
+    description: "Resize, convert, and crop images — Sharp on the server when small, Canvas locally as fallback.",
     href: "/image-tools",
     emoji: "🖼️",
     tools: [
-      { name: "Resize",          description: "Resize images to specific dimensions.",               href: "/image-tools/resize",      status: "soon", emoji: "📐", tags: ["Image", "Resize"] },
-      { name: "Convert",         description: "Convert between PNG, JPG, WebP, and more.",           href: "/image-tools/convert",     status: "soon", emoji: "🔄", tags: ["Image", "Convert"] },
-      { name: "Crop",            description: "Crop images to a specific area.",                     href: "/image-tools/crop",        status: "soon", emoji: "✂️",  tags: ["Image", "Crop"] },
+      { name: "Resize",          description: "Resize with contain/cover/fill — API or browser.",     href: "/image-tools/resize",      status: "live", emoji: "📐", tags: ["Image", "Resize"] },
+      { name: "Convert",         description: "Convert between PNG, JPEG, and WebP.",                  href: "/image-tools/convert",     status: "live", emoji: "🔄", tags: ["Image", "Convert"] },
+      { name: "Crop",            description: "Crop to a pixel rectangle; outputs PNG.",             href: "/image-tools/crop",        status: "live", emoji: "✂️",  tags: ["Image", "Crop"] },
     ],
   },
   {

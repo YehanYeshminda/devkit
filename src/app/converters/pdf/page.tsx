@@ -12,6 +12,13 @@ import {
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import {
+  canDecodeBase64ToPdfOnServer,
+  canEncodePdfToBase64OnServer,
+  postBase64ToPdfApi,
+  postPdfToBase64Api,
+} from "@/lib/converter-api-client";
+import { downloadBlob, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 // ── helpers ──────────────────────────────────────────────────────────────
@@ -69,6 +76,9 @@ function formatBytes(n: number) {
 function estimatedPdfBytes(b64Len: number) {
   return Math.round(b64Len * 0.75);
 }
+
+/** Skip iframe preview above this size (memory / tab stability). */
+const MAX_PREVIEW_PDF_BYTES = 10 * 1024 * 1024;
 
 // ── shared sub-components ─────────────────────────────────────────────────
 
@@ -167,9 +177,26 @@ function PdfToBase64() {
     setError("");
     setFile(f);
     setLoading(true);
-    setUrl(URL.createObjectURL(f));
-    setShowPreview(true);
+    const allowPreview = f.size <= MAX_PREVIEW_PDF_BYTES;
+    if (allowPreview) {
+      setUrl(URL.createObjectURL(f));
+      setShowPreview(true);
+    } else {
+      setUrl(null);
+      setShowPreview(false);
+    }
     try {
+      if (canEncodePdfToBase64OnServer(f.size)) {
+        const api = await postPdfToBase64Api(f);
+        if (api.ok) {
+          setBase64(api.base64);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
       const result = await fileToBase64(f);
       setBase64(result);
     } catch {
@@ -255,6 +282,12 @@ function PdfToBase64() {
         {error && (
           <p className="rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm text-red-400">
             {error}
+          </p>
+        )}
+
+        {file && file.size > MAX_PREVIEW_PDF_BYTES && (
+          <p className="rounded-lg border border-white/10 bg-white/[0.02] px-4 py-2.5 text-xs text-muted-foreground">
+            Preview is disabled for PDFs over {formatBytes(MAX_PREVIEW_PDF_BYTES)}. Base64 conversion still runs.
           </p>
         )}
 
@@ -344,6 +377,12 @@ function Base64ToPdf() {
   function handlePreview() {
     setError("");
     if (!trimmed) { setError("Paste a Base64 string first."); return; }
+    if (estBytes > MAX_PREVIEW_PDF_BYTES) {
+      setError(
+        `Estimated PDF size (~${formatBytes(estBytes)}) exceeds ${formatBytes(MAX_PREVIEW_PDF_BYTES)} — preview is disabled. You can still download.`,
+      );
+      return;
+    }
     try {
       // For preview we use the fast sync version — it's just rendering, not downloading
       const binary = atob(trimmed);
@@ -365,6 +404,23 @@ function Base64ToPdf() {
     setIsDownloading(true);
     setProgress(0);
     try {
+      if (canDecodeBase64ToPdfOnServer(trimmed.length)) {
+        setProgress(null);
+        const api = await postBase64ToPdfApi(trimmed, filename);
+        if (api.ok) {
+          const name = filename.endsWith(".pdf") ? filename : `${filename}.pdf`;
+          downloadBlob(api.blob, api.filenameHint ?? name);
+          setSuccess(true);
+          setTimeout(() => setSuccess(false), 2500);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+        setProgress(0);
+      }
+
       const blob = await base64ToPdfBlobAsync(trimmed, setProgress);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -456,6 +512,12 @@ function Base64ToPdf() {
                   ~{formatBytes(estBytes)}
                 </span>
               </span>
+              {estBytes > MAX_PREVIEW_PDF_BYTES && (
+                <>
+                  <span className="opacity-40">·</span>
+                  <span className="text-amber-400/90">Preview disabled over {formatBytes(MAX_PREVIEW_PDF_BYTES)}</span>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -473,7 +535,7 @@ function Base64ToPdf() {
             onClick={
               hasSidePreview ? () => setShowPreview(false) : handlePreview
             }
-            disabled={isDownloading}
+            disabled={isDownloading || estBytes > MAX_PREVIEW_PDF_BYTES}
             className={cn(
               "flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition disabled:opacity-40",
               hasSidePreview
@@ -577,13 +639,12 @@ export default function PdfConverterPage() {
                 PDF ↔ Base64 Converter
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Convert PDFs to Base64 strings and back — entirely in your browser.
+                Convert PDFs to Base64 strings and back. Smaller payloads may use the API (~3.6MB upload cap; PDF→Base64 uses a tighter cap so the JSON response fits); larger inputs stay in your browser.
               </p>
             </div>
-            {/* Privacy badge */}
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.06] px-3 py-1.5 text-xs text-emerald-400">
-              <span className="size-1.5 shrink-0 rounded-full bg-emerald-500" />
-              100% client-side — files never leave your tab
+            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground">
+              <span className="size-1.5 shrink-0 rounded-full bg-[#6366f1]" />
+              Hybrid: server when small, browser fallback
             </div>
           </div>
         </div>

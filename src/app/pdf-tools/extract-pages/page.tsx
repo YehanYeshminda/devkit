@@ -5,6 +5,7 @@ import { PDFDocument } from "pdf-lib";
 import { Check, Download, FileText, Loader2, Upload, X } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
+import { canUsePdfApi, downloadBlob, postPdfForm, shouldFallbackToClientPdf } from "@/lib/pdf-api-client";
 import { cn } from "@/lib/utils";
 
 function formatBytes(n: number) {
@@ -77,16 +78,32 @@ export default function ExtractPagesPage() {
   }
 
   async function extract() {
-    if (!sourceBuf || selected.size === 0) return;
+    if (!sourceBuf || !file || selected.size === 0) return;
     setProcessing(true); setError(""); setDone(false);
     try {
+      const indices = Array.from(selected).sort((a, b) => a - b);
+      if (canUsePdfApi(file.size)) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("options", JSON.stringify({ indices }));
+        const api = await postPdfForm("/api/pdf/extract-pages", fd);
+        if (api.ok) {
+          downloadBlob(api.blob, api.filenameHint ?? file.name.replace(/\.pdf$/i, "-extracted.pdf"));
+          setDone(true);
+          return;
+        }
+        if (!shouldFallbackToClientPdf(api.status)) {
+          setError(api.message);
+          return;
+        }
+      }
+
       const newDoc = await PDFDocument.create();
       const srcDoc = await PDFDocument.load(sourceBuf, { ignoreEncryption: true });
-      const indices = Array.from(selected).sort((a, b) => a - b);
       const copied = await newDoc.copyPages(srcDoc, indices);
       copied.forEach((p) => newDoc.addPage(p));
       const bytes = await newDoc.save();
-      downloadPdf(bytes, file!.name.replace(/\.pdf$/i, "-extracted.pdf"));
+      downloadPdf(bytes, file.name.replace(/\.pdf$/i, "-extracted.pdf"));
       setDone(true);
     } catch (e) { setError(String(e)); }
     finally { setProcessing(false); }
@@ -101,7 +118,7 @@ export default function ExtractPagesPage() {
         <div className="mb-6">
           <p className="mb-1.5 text-xs text-muted-foreground">PDF Tools / Extract Pages</p>
           <h1 className="text-2xl font-semibold tracking-tight">Extract Pages</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Select the pages you want to keep and extract them into a new PDF. Processed locally — nothing is uploaded.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Select the pages you want to keep and extract them into a new PDF. Under ~3.6MB the file may be sent to our server; larger PDFs stay in your browser.</p>
         </div>
 
         <div className="space-y-5">
