@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Check, Copy, Download, X } from "lucide-react";
 
+import { CreateShareLinkButton } from "@/components/share/create-share-link-button";
 import { SiteHeader } from "@/components/site/site-header";
 import { cn } from "@/lib/utils";
 
@@ -56,6 +57,11 @@ export default function JsonFormatterPage() {
 
         {/* Toolbar */}
         <div className="mb-4 flex flex-wrap items-center gap-3">
+          <CreateShareLinkButton
+            kind="json"
+            getPayload={() => ({ raw: input, indent })}
+            disabled={!input.trim() || Boolean(error)}
+          />
           <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.02] p-1">
             {([2, 4] as const).map((n) => (
               <button key={n} onClick={() => setIndent(n)} className={cn("rounded-md px-3 py-1 text-xs font-medium transition-colors", indent === n ? "bg-white/10 text-foreground" : "text-muted-foreground hover:text-foreground")}>

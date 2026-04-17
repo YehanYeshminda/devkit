@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Check, Copy, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
+import { SnippetPinButton } from "@/components/site/snippet-pin-button";
+import { useDevkitWorkspace } from "@/components/site/devkit-workspace-provider";
 import { cn } from "@/lib/utils";
 
 interface Snippet { id: string; title: string; description: string; tags: string[]; language: string; code: string; }
@@ -339,6 +341,15 @@ function CopyBtn({ code }: { code: string }) {
 export default function CSSSnippetsPage() {
   const [search, setSearch] = React.useState("");
   const [activeTag, setActiveTag] = React.useState<string | null>(null);
+  const { state } = useDevkitWorkspace();
+  const spacious = Boolean(state.prefs.spaciousSnippetCards);
+
+  React.useEffect(() => {
+    const h = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
+    if (!h) return;
+    const el = document.getElementById(decodeURIComponent(h));
+    requestAnimationFrame(() => el?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, []);
 
   const filtered = React.useMemo(() => {
     let list = SNIPPETS;
@@ -373,15 +384,22 @@ export default function CSSSnippetsPage() {
         </div>
 
         {/* Snippets */}
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className={cn("grid lg:grid-cols-2", spacious ? "gap-6" : "gap-4")}>
           {filtered.map(snip => (
-            <div key={snip.id} className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-card/60 hover:border-white/20 transition-colors">
+            <div
+              key={snip.id}
+              id={snip.id}
+              className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-card/60 hover:border-white/20 transition-colors scroll-mt-24"
+            >
               <div className="flex items-start justify-between gap-3 px-4 pt-4 pb-2">
-                <div>
+                <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-semibold text-foreground">{snip.title}</h3>
                   <p className="mt-0.5 text-xs text-muted-foreground">{snip.description}</p>
                 </div>
-                <CopyBtn code={snip.code} />
+                <div className="flex shrink-0 items-center gap-2">
+                  <SnippetPinButton category="css" id={snip.id} title={snip.title} />
+                  <CopyBtn code={snip.code} />
+                </div>
               </div>
               <div className="flex flex-wrap gap-1 px-4 pb-2">
                 {snip.tags.map(t => <span key={t} className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[10px] text-muted-foreground/70">{t}</span>)}

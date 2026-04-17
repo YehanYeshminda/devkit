@@ -1,9 +1,16 @@
 "use client";
 
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+} from "@clerk/nextjs";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { ChevronDown, X } from "lucide-react";
+import { ChevronDown, LayoutDashboard, X } from "lucide-react";
 
 import { Logo } from "@/components/site/logo";
 import { TOOL_CATEGORIES } from "@/lib/tools-registry";
@@ -137,14 +144,68 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
           </nav>
         </div>
 
-        {/* Right slot */}
-        {children && (
-          <div className="flex w-full max-w-xs items-center justify-end sm:w-auto">
-            {children}
-          </div>
-        )}
+        <div className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-3">
+          {children ? (
+            <div className="flex min-w-0 max-w-[11rem] flex-1 justify-end sm:max-w-xs md:max-w-sm">
+              {children}
+            </div>
+          ) : null}
+          <SignedIn>
+            <Link
+              href="/account"
+              className={cn(
+                "flex rounded-md border border-white/10 p-1.5 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground",
+                pathname.startsWith("/account") && "border-white/20 bg-white/[0.06] text-foreground",
+              )}
+              title="Workspace"
+            >
+              <LayoutDashboard className="size-4" />
+            </Link>
+          </SignedIn>
+          <HeaderAuth />
+        </div>
       </div>
     </header>
+  );
+}
+
+function HeaderAuth() {
+  return (
+    <>
+      <SignedOut>
+        <div className="flex items-center gap-1.5">
+          <SignInButton>
+            <button
+              type="button"
+              className={cn(
+                "rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition sm:px-3 sm:text-sm",
+                "hover:bg-white/[0.08] hover:text-foreground",
+              )}
+            >
+              Sign in
+            </button>
+          </SignInButton>
+          <SignUpButton>
+            <button
+              type="button"
+              className="rounded-md bg-[#6366f1] px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-[#4f51d4] sm:px-3 sm:text-sm"
+            >
+              Sign up
+            </button>
+          </SignUpButton>
+        </div>
+      </SignedOut>
+      <SignedIn>
+        <UserButton
+          afterSignOutUrl="/"
+          appearance={{
+            elements: {
+              avatarBox: "h-8 w-8",
+            },
+          }}
+        />
+      </SignedIn>
+    </>
   );
 }
 

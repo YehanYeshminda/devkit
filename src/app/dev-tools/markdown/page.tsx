@@ -3,6 +3,7 @@
 import * as React from "react";
 import { marked } from "marked";
 import { Check, Copy, Download, X } from "lucide-react";
+import { CreateShareLinkButton } from "@/components/share/create-share-link-button";
 import { SiteHeader } from "@/components/site/site-header";
 import { cn } from "@/lib/utils";
 
@@ -84,7 +85,8 @@ export default function MarkdownPreviewPage() {
             <h1 className="text-2xl font-semibold tracking-tight">Markdown Preview</h1>
             <p className="mt-1 text-sm text-muted-foreground">Live preview with GitHub Flavored Markdown — tables, task lists, fenced code blocks.</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <CreateShareLinkButton kind="markdown" getPayload={() => ({ markdown: md })} disabled={!md.trim()} />
             <span className="text-xs text-muted-foreground">{wordCount} words · ~{readingTime} min read</span>
             <CopyBtn text={md} />
             <button onClick={downloadMd} className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-white/[0.08] hover:text-foreground">

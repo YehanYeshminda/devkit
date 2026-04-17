@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Check, Copy, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
+import { SnippetPinButton } from "@/components/site/snippet-pin-button";
+import { useDevkitWorkspace } from "@/components/site/devkit-workspace-provider";
 import { cn } from "@/lib/utils";
 
 interface Snippet { id: string; title: string; description: string; code: string; category: string; tags: string[]; }
@@ -69,6 +71,15 @@ function CopyBtn({ code }: { code: string }) {
 export default function BashSnippetsPage() {
   const [search, setSearch] = React.useState("");
   const [cat, setCat] = React.useState("All");
+  const { state } = useDevkitWorkspace();
+  const spacious = Boolean(state.prefs.spaciousSnippetCards);
+
+  React.useEffect(() => {
+    const h = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
+    if (!h) return;
+    const el = document.getElementById(decodeURIComponent(h));
+    requestAnimationFrame(() => el?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, []);
 
   const filtered = React.useMemo(() => {
     let list = SNIPPETS;
@@ -108,19 +119,26 @@ export default function BashSnippetsPage() {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className={cn("space-y-8", spacious && "space-y-10")}>
           {Object.entries(grouped).map(([category, snips]) => (
             <div key={category}>
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">{category}</h2>
-              <div className="grid gap-2 lg:grid-cols-2">
+              <div className={cn("grid lg:grid-cols-2", spacious ? "gap-4" : "gap-2")}>
                 {snips.map(snip => (
-                  <div key={snip.id} className="overflow-hidden rounded-xl border border-white/10 bg-card/60 hover:border-white/20 transition-colors">
+                  <div
+                    key={snip.id}
+                    id={snip.id}
+                    className="overflow-hidden rounded-xl border border-white/10 bg-card/60 hover:border-white/20 transition-colors scroll-mt-24"
+                  >
                     <div className="flex items-start justify-between gap-3 px-4 pt-3 pb-1">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-foreground">{snip.title}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">{snip.description}</p>
                       </div>
-                      <CopyBtn code={snip.code} />
+                      <div className="flex shrink-0 items-center gap-2">
+                        <SnippetPinButton category="bash" id={snip.id} title={snip.title} />
+                        <CopyBtn code={snip.code} />
+                      </div>
                     </div>
                     <pre className="overflow-x-auto border-t border-white/[0.06] bg-black/20 px-4 py-3 font-mono text-xs text-amber-400/90 leading-relaxed"><code>{snip.code}</code></pre>
                   </div>

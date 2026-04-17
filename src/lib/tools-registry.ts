@@ -66,6 +66,8 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     href: "/dev-tools",
     emoji: "🛠️",
     tools: [
+      { name: "DNS Lookup",         description: "Resolve A, AAAA, MX, TXT, and other records via Google Public DNS (HTTPS).", href: "/dev-tools/dns-lookup", status: "live", emoji: "🌐", tags: ["DNS", "Network"] },
+      { name: "GitHub Lookup",      description: "Look up public GitHub users or repos via the REST API (no token, rate limits apply).", href: "/dev-tools/github-lookup", status: "live", emoji: "🐙", tags: ["GitHub", "API"] },
       { name: "JWT Decoder",        description: "Decode and inspect JSON Web Tokens.",               href: "/dev-tools/jwt",            status: "live", emoji: "🔑", tags: ["JWT", "Auth"] },
       { name: "JSON Formatter",    description: "Pretty-print and validate JSON data.",               href: "/dev-tools/json-formatter", status: "live", emoji: "{ }", tags: ["JSON", "Format"] },
       { name: "Regex Tester",      description: "Test regular expressions with live match highlighting.", href: "/dev-tools/regex",       status: "live", emoji: ".*", tags: ["Regex", "Pattern"] },

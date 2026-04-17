@@ -3,6 +3,8 @@
 import * as React from "react";
 import { Check, Copy, Search } from "lucide-react";
 import { SiteHeader } from "@/components/site/site-header";
+import { SnippetPinButton } from "@/components/site/snippet-pin-button";
+import { useDevkitWorkspace } from "@/components/site/devkit-workspace-provider";
 import { cn } from "@/lib/utils";
 
 interface Cmd { id: string; title: string; description: string; code: string; category: string; tags: string[]; }
@@ -76,6 +78,15 @@ function CopyBtn({ code }: { code: string }) {
 export default function GitCommandsPage() {
   const [search, setSearch] = React.useState("");
   const [cat, setCat] = React.useState("All");
+  const { state } = useDevkitWorkspace();
+  const spacious = Boolean(state.prefs.spaciousSnippetCards);
+
+  React.useEffect(() => {
+    const h = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
+    if (!h) return;
+    const el = document.getElementById(decodeURIComponent(h));
+    requestAnimationFrame(() => el?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, []);
 
   const filtered = React.useMemo(() => {
     let list = COMMANDS;
@@ -115,19 +126,26 @@ export default function GitCommandsPage() {
           </div>
         </div>
 
-        <div className="space-y-8">
+        <div className={cn("space-y-8", spacious && "space-y-10")}>
           {Object.entries(grouped).map(([category, cmds]) => (
             <div key={category}>
               <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">{category}</h2>
-              <div className="grid gap-2 lg:grid-cols-2">
+              <div className={cn("grid lg:grid-cols-2", spacious ? "gap-4" : "gap-2")}>
                 {cmds.map(cmd => (
-                  <div key={cmd.id} className="overflow-hidden rounded-xl border border-white/10 bg-card/60 hover:border-white/20 transition-colors">
+                  <div
+                    key={cmd.id}
+                    id={cmd.id}
+                    className="overflow-hidden rounded-xl border border-white/10 bg-card/60 hover:border-white/20 transition-colors scroll-mt-24"
+                  >
                     <div className="flex items-start justify-between gap-3 px-4 pt-3 pb-1">
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-foreground">{cmd.title}</p>
                         <p className="mt-0.5 text-xs text-muted-foreground">{cmd.description}</p>
                       </div>
-                      <CopyBtn code={cmd.code} />
+                      <div className="flex shrink-0 items-center gap-2">
+                        <SnippetPinButton category="git" id={cmd.id} title={cmd.title} />
+                        <CopyBtn code={cmd.code} />
+                      </div>
                     </div>
                     <pre className="overflow-x-auto border-t border-white/[0.06] bg-black/20 px-4 py-3 font-mono text-xs text-emerald-400/90 leading-relaxed"><code>{cmd.code}</code></pre>
                   </div>
