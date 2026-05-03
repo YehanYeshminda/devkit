@@ -77,6 +77,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       { name: "Unix Timestamp",    description: "Convert epoch timestamps to human-readable dates.",   href: "/dev-tools/timestamp",    status: "live", emoji: "🕐", tags: ["Timestamp", "Date"] },
       { name: "Case Converter",    description: "Convert text between camelCase, snake_case, and more.", href: "/dev-tools/case-converter", status: "live", emoji: "Aa", tags: ["Text", "Case"] },
       { name: "Markdown Preview",  description: "Live preview for Markdown with GitHub Flavored support.", href: "/dev-tools/markdown",   status: "live", emoji: "📝", tags: ["Markdown", "Preview"] },
+      { name: "HTML Previewer",    description: "Render and inspect HTML live in a sandboxed preview pane.", href: "/dev-tools/html-previewer", status: "live", emoji: "🧩", tags: ["HTML", "Preview", "Sandbox"] },
       { name: "Code Minifier",     description: "Minify JavaScript, CSS, and HTML code.",             href: "/dev-tools/minifier",     status: "soon", emoji: "📦", tags: ["JS", "CSS", "Minify"] },
     ],
   },
@@ -99,7 +100,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     emoji: "🔧",
     tools: [
       { name: "UUID Generator",  description: "Generate v4 UUIDs individually or in bulk.",          href: "/utilities/uuid",          status: "live", emoji: "🆔", tags: ["UUID", "ID"] },
-      { name: "QR Generator",    description: "Generate QR codes from any text or URL.",             href: "/utilities/qr",            status: "soon", emoji: "⬛", tags: ["QR", "Barcode"] },
+      { name: "QR Generator",    description: "Generate QR codes from any text or URL.",             href: "/utilities/qr",            status: "live", emoji: "⬛", tags: ["QR", "Barcode"] },
     ],
   },
   {

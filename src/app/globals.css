@@ -104,6 +104,44 @@
 .markdown-body del { opacity: 0.5; }
 
 @layer utilities {
+  .home-bg-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(42px);
+    opacity: 0.2;
+    will-change: transform;
+  }
+
+  .home-bg-orb-a {
+    left: max(-6rem, calc(50% - 34rem));
+    top: -5.5rem;
+    height: 20rem;
+    width: 20rem;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.5), rgba(99, 102, 241, 0));
+    animation: homeDriftA 16s ease-in-out infinite alternate;
+  }
+
+  .home-bg-orb-b {
+    right: max(-6rem, calc(50% - 34rem));
+    top: 5.5rem;
+    height: 16rem;
+    width: 16rem;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.35), rgba(56, 189, 248, 0));
+    animation: homeDriftB 19s ease-in-out infinite alternate;
+  }
+
+  .home-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at top center, black 22%, transparent 78%);
+    opacity: 0.5;
+    animation: homeGridShift 26s linear infinite;
+  }
+
   .surface-glow {
     box-shadow:
       0 1px 0 rgba(255, 255, 255, 0.04) inset,
@@ -126,5 +164,40 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+}
+
+@keyframes homeDriftA {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(1.8rem, 1.1rem, 0) scale(1.06);
+  }
+}
+
+@keyframes homeDriftB {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(-1.3rem, 1.6rem, 0) scale(1.05);
+  }
+}
+
+@keyframes homeGridShift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(32px, 22px, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-bg-orb-a,
+  .home-bg-orb-b,
+  .home-bg-grid {
+    animation: none;
   }
 }

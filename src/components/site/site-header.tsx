@@ -40,6 +40,7 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
   const [favoriteHrefs, setFavoriteHrefs] = React.useState<string[]>([]);
   const [favoritesReady, setFavoritesReady] = React.useState(false);
   const ref = React.useRef<HTMLDivElement>(null);
+  const hoverCloseTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Close on outside click
   React.useEffect(() => {
@@ -49,6 +50,13 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
+
+  React.useEffect(
+    () => () => {
+      if (hoverCloseTimer.current) clearTimeout(hoverCloseTimer.current);
+    },
+    [],
+  );
 
   // Close on navigation
   React.useEffect(() => {
@@ -131,6 +139,22 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
     );
   }
 
+  function clearHoverCloseTimer() {
+    if (!hoverCloseTimer.current) return;
+    clearTimeout(hoverCloseTimer.current);
+    hoverCloseTimer.current = null;
+  }
+
+  function onToolsMouseEnter() {
+    clearHoverCloseTimer();
+    setOpen(true);
+  }
+
+  function onToolsMouseLeave() {
+    clearHoverCloseTimer();
+    hoverCloseTimer.current = setTimeout(() => setOpen(false), 140);
+  }
+
   function renderToolItem({
     tool,
     compact = false,
@@ -201,7 +225,12 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
             <NavLink href="/components" label="Components" pathname={pathname} />
 
             {/* Tools dropdown trigger */}
-            <div className="relative" ref={ref}>
+            <div
+              className="relative"
+              ref={ref}
+              onMouseEnter={onToolsMouseEnter}
+              onMouseLeave={onToolsMouseLeave}
+            >
               <button
                 onClick={() => setOpen((v) => !v)}
                 className={cn(

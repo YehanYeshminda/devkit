@@ -65,6 +65,41 @@ const SECTIONS = [
   },
 ];
 
+const WHATS_NEW = [
+  {
+    title: "QR Generator",
+    description:
+      "Generate customizable QR codes from text or URLs with PNG and SVG download.",
+    href: "/utilities/qr",
+    badge: "New",
+    area: "Utilities",
+  },
+  {
+    title: "HTML Previewer",
+    description:
+      "New dev tool for writing HTML and seeing a live sandboxed preview instantly.",
+    href: "/dev-tools/html-previewer",
+    badge: "New",
+    area: "Developer Tools",
+  },
+  {
+    title: "Tools Search",
+    description:
+      "Search inside the Tools dropdown to find categories and tools faster.",
+    href: "/dev-tools",
+    badge: "Update",
+    area: "Navigation",
+  },
+  {
+    title: "Favorites in Tools",
+    description:
+      "Star your frequent tools and access them quickly from the Favorites section.",
+    href: "/dev-tools",
+    badge: "Update",
+    area: "Navigation",
+  },
+];
+
 export default function HomePage() {
   return (
     <div className="flex min-h-dvh flex-col">
@@ -72,8 +107,14 @@ export default function HomePage() {
       <main className="flex flex-1 flex-col">
 
         {/* ── Hero ── */}
-        <section className="px-6 pb-20 pt-24 sm:pt-28">
-          <div className="mx-auto max-w-2xl">
+        <section className="relative overflow-hidden px-6 pb-20 pt-24 sm:pt-28">
+          <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+            <div className="home-bg-orb home-bg-orb-a" />
+            <div className="home-bg-orb home-bg-orb-b" />
+            <div className="home-bg-grid" />
+          </div>
+
+          <div className="relative mx-auto max-w-2xl">
             <p className="mb-5 text-sm text-muted-foreground">
               Open source · free · no account needed
             </p>
@@ -114,9 +155,39 @@ export default function HomePage() {
         {/* ── What&apos;s inside ── */}
         <section className="px-6 pb-20 lg:px-10">
           <div className="mx-auto max-w-2xl lg:max-w-6xl">
-            <p className="mb-6 text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
-              What&apos;s inside
-            </p>
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/60">
+                What&apos;s inside
+              </p>
+              <Link
+                href="/dev-tools"
+                className="text-xs text-muted-foreground transition hover:text-foreground"
+              >
+                View all tools →
+              </Link>
+            </div>
+
+            <div className="mb-6 rounded-xl border border-white/10 bg-card/65 p-3.5">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/55">
+                Recent updates
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {WHATS_NEW.map((item) => (
+                  <Link
+                    key={item.title}
+                    href={item.href}
+                    className="group inline-flex min-w-0 items-center gap-2 rounded-md border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs transition-colors hover:border-white/20 hover:bg-white/[0.06]"
+                  >
+                    <span className="rounded-full border border-[#6366f1]/35 bg-[#6366f1]/15 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[#a5b4fc]">
+                      {item.badge}
+                    </span>
+                    <span className="font-medium text-foreground/90 group-hover:text-foreground">
+                      {item.title}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
 
             <div className="overflow-hidden rounded-xl border border-border bg-border grid gap-px sm:grid-cols-2 lg:grid-cols-3">
               {SECTIONS.map((s) => (
