@@ -18,33 +18,48 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type NavChild = {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
+
+type NavSection = {
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  single?: boolean;
+  children?: NavChild[];
+};
+
 export function Preview() {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [expanded, setExpanded] = React.useState<string | null>("Analytics");
   const [query, setQuery] = React.useState("");
 
-  const sections = [
-    { label: "Dashboard", icon: Home, single: true },
-    {
-      label: "Analytics",
-      icon: BarChart2,
-      children: [
-        { label: "Overview", icon: LineChart },
-        { label: "Reports", icon: FileText },
-        { label: "Export", icon: Download },
-      ],
-    },
-    {
-      label: "Users",
-      icon: Users,
-      children: [
-        { label: "All Users", icon: Users },
-        { label: "Roles", icon: Shield },
-        { label: "Invite", icon: Send },
-      ],
-    },
-    { label: "Settings", icon: Settings, single: true },
-  ];
+  const sections = React.useMemo<NavSection[]>(
+    () => [
+      { label: "Dashboard", icon: Home, single: true },
+      {
+        label: "Analytics",
+        icon: BarChart2,
+        children: [
+          { label: "Overview", icon: LineChart as NavChild["icon"] },
+          { label: "Reports", icon: FileText as NavChild["icon"] },
+          { label: "Export", icon: Download as NavChild["icon"] },
+        ],
+      },
+      {
+        label: "Users",
+        icon: Users,
+        children: [
+          { label: "All Users", icon: Users as NavChild["icon"] },
+          { label: "Roles", icon: Shield as NavChild["icon"] },
+          { label: "Invite", icon: Send as NavChild["icon"] },
+        ],
+      },
+      { label: "Settings", icon: Settings, single: true },
+    ],
+    []
+  );
 
   const normalizedQuery = query.trim().toLowerCase();
 

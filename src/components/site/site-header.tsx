@@ -299,7 +299,7 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
                       </div>
                     ) : (
                       <div className="rounded-lg border border-dashed border-white/10 p-5 text-center text-sm text-muted-foreground/60">
-                        No tools match "{query.trim()}".
+                        No tools match &quot;{query.trim()}&quot;.
                       </div>
                     )
                   ) : (
