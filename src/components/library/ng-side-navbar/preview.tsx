@@ -14,12 +14,14 @@ import {
   Shield,
   Send,
   LineChart,
+  Search,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Preview() {
   const [sidebarOpen, setSidebarOpen] = React.useState(true);
   const [expanded, setExpanded] = React.useState<string | null>("Analytics");
+  const [query, setQuery] = React.useState("");
 
   const sections = [
     { label: "Dashboard", icon: Home, single: true },
@@ -43,6 +45,28 @@ export function Preview() {
     },
     { label: "Settings", icon: Settings, single: true },
   ];
+
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const filteredSections = React.useMemo(() => {
+    if (!normalizedQuery) return sections;
+
+    return sections.flatMap((section) => {
+      const sectionMatch = section.label.toLowerCase().includes(normalizedQuery);
+
+      if (section.single || !section.children) {
+        return sectionMatch ? [section] : [];
+      }
+
+      if (sectionMatch) return [section];
+
+      const matchingChildren = section.children.filter((child) =>
+        child.label.toLowerCase().includes(normalizedQuery)
+      );
+
+      return matchingChildren.length > 0 ? [{ ...section, children: matchingChildren }] : [];
+    });
+  }, [normalizedQuery, sections]);
 
   return (
     /* Outer: clips the scaled inner to a card-friendly height */
@@ -71,10 +95,44 @@ export function Preview() {
           </div>
 
           {/* Nav items */}
-          <nav className="flex-1 overflow-hidden p-2 text-sm">
-            {sections.map((s) => {
+          <nav className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2 text-sm">
+            {sidebarOpen && (
+              <div className="mb-2">
+                <label
+                  htmlFor="tool-search"
+                  className="mb-1 block px-2 text-[10px] uppercase tracking-wide text-[#ced4da]/50"
+                >
+                  Find tool
+                </label>
+                <div className="flex items-center gap-2 rounded-md border border-white/10 bg-[#1e1e2e] px-2">
+                  <Search className="size-3.5 shrink-0 text-[#ced4da]/45" />
+                  <input
+                    id="tool-search"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Type to filter..."
+                    className="h-8 w-full bg-transparent text-xs text-[#e9ecef] outline-none placeholder:text-[#ced4da]/35"
+                  />
+                  {query && (
+                    <button
+                      onClick={() => setQuery("")}
+                      className="text-[10px] text-[#ced4da]/55 hover:text-white"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {filteredSections.length === 0 && sidebarOpen ? (
+              <p className="rounded-md border border-dashed border-white/15 px-2.5 py-2 text-xs text-[#ced4da]/60">
+                No tools found.
+              </p>
+            ) : (
+              filteredSections.map((s) => {
               const Icon = s.icon;
-              const isExpanded = expanded === s.label;
+              const isExpanded = normalizedQuery ? true : expanded === s.label;
 
               if (s.single || !sidebarOpen) {
                 return (
@@ -115,7 +173,7 @@ export function Preview() {
                   )}
                 </div>
               );
-            })}
+            }))}
           </nav>
 
           {/* Footer */}

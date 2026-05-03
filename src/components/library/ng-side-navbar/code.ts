@@ -1,13 +1,15 @@
 export const code = `// side-navbar.component.ts
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { PanelMenuModule } from 'primeng/panelmenu';
 import { ButtonModule } from 'primeng/button';
 import { AvatarModule } from 'primeng/avatar';
 import { TooltipModule } from 'primeng/tooltip';
 import { DividerModule } from 'primeng/divider';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-side-navbar',
@@ -15,11 +17,13 @@ import { DividerModule } from 'primeng/divider';
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     PanelMenuModule,
     ButtonModule,
     AvatarModule,
     TooltipModule,
     DividerModule,
+    InputTextModule,
   ],
   styles: [\`
     .layout {
@@ -53,6 +57,42 @@ import { DividerModule } from 'primeng/divider';
     }
 
     .brand { font-size: 1.1rem; font-weight: 700; }
+
+    .sidebar-nav {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5rem;
+    }
+
+    .search-wrap {
+      display: grid;
+      gap: 0.4rem;
+      margin: 0.25rem 0.5rem 0.75rem;
+    }
+
+    .search-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--text-color-secondary);
+    }
+
+    .search-empty {
+      margin: 0.5rem;
+      border: 1px dashed var(--surface-border);
+      border-radius: 8px;
+      padding: 0.6rem 0.7rem;
+      color: var(--text-color-secondary);
+      font-size: 0.82rem;
+    }
 
     .sidebar-footer {
       margin-top: auto;
@@ -101,25 +141,54 @@ import { DividerModule } from 'primeng/divider';
         </div>
 
         <!-- Navigation -->
-        @if (isOpen()) {
-          <p-panelMenu [model]="items" styleClass="w-full border-none" />
-        } @else {
-          <!-- Collapsed: show only icons -->
-          <ul class="list-none p-2 m-0">
-            @for (item of flatItems; track item.label) {
-              <li>
-                <a
-                  class="flex justify-content-center align-items-center p-2 border-round cursor-pointer hover:surface-hover mb-1"
-                  [routerLink]="item.routerLink"
-                  [pTooltip]="item.label"
-                  tooltipPosition="right"
-                >
-                  <i [class]="item.icon + ' text-xl text-color-secondary'"></i>
-                </a>
-              </li>
+        <div class="sidebar-nav">
+          @if (isOpen()) {
+            <div class="search-wrap">
+              <span class="search-label">Find tool</span>
+              <div class="search-row">
+                <input
+                  pInputText
+                  type="text"
+                  class="w-full"
+                  placeholder="Type to filter..."
+                  [ngModel]="searchTerm()"
+                  (ngModelChange)="searchTerm.set($event)"
+                />
+                @if (hasSearch()) {
+                  <p-button
+                    label="Clear"
+                    [text]="true"
+                    severity="secondary"
+                    size="small"
+                    (onClick)="searchTerm.set('')"
+                  />
+                }
+              </div>
+            </div>
+
+            <p-panelMenu [model]="filteredItems()" styleClass="w-full border-none" />
+
+            @if (noResults()) {
+              <p class="search-empty">No tools found for "{{ searchTerm().trim() }}".</p>
             }
-          </ul>
-        }
+          } @else {
+            <!-- Collapsed: show only icons -->
+            <ul class="list-none p-2 m-0">
+              @for (item of flatItems; track item.label) {
+                <li>
+                  <a
+                    class="flex justify-content-center align-items-center p-2 border-round cursor-pointer hover:surface-hover mb-1"
+                    [routerLink]="item.routerLink"
+                    [pTooltip]="item.label"
+                    tooltipPosition="right"
+                  >
+                    <i [class]="item.icon + ' text-xl text-color-secondary'"></i>
+                  </a>
+                </li>
+              }
+            </ul>
+          }
+        </div>
 
         <!-- Footer / user -->
         @if (isOpen()) {
@@ -153,6 +222,13 @@ import { DividerModule } from 'primeng/divider';
 })
 export class SideNavbarComponent {
   isOpen = signal(true);
+  searchTerm = signal('');
+  hasSearch = computed(() => this.searchTerm().trim().length > 0);
+  filteredItems = computed(() => {
+    const term = this.searchTerm().trim().toLowerCase();
+    return term ? this.filterMenuItems(this.items, term) : this.items;
+  });
+  noResults = computed(() => this.hasSearch() && this.filteredItems().length === 0);
 
   toggleSidebar() {
     this.isOpen.update((v) => !v);
@@ -189,6 +265,27 @@ export class SideNavbarComponent {
       routerLink: ['/settings'],
     },
   ];
+
+  private filterMenuItems(items: MenuItem[], term: string): MenuItem[] {
+    return items.flatMap((item) => {
+      const label = (item.label ?? '').toLowerCase();
+      const labelMatches = label.includes(term);
+      const hasChildren = Array.isArray(item.items) && item.items.length > 0;
+
+      if (!hasChildren) {
+        return labelMatches ? [item] : [];
+      }
+
+      if (labelMatches) {
+        return [{ ...item, expanded: true }];
+      }
+
+      const matchingChildren = this.filterMenuItems(item.items ?? [], term);
+      if (!matchingChildren.length) return [];
+
+      return [{ ...item, items: matchingChildren, expanded: true }];
+    });
+  }
 
   /** Flattened top-level items used when the sidebar is collapsed */
   flatItems = this.items.map((i) => ({ label: i.label, icon: i.icon, routerLink: i.routerLink ?? i.items?.[0]?.routerLink }));
