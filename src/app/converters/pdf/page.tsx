@@ -2,13 +2,18 @@
 
 import * as React from "react";
 import {
+  ArrowRightLeft,
   Check,
   Copy,
   Download,
   Eye,
   EyeOff,
+  FileText,
+  ShieldCheck,
+  Sparkles,
   Upload,
   X,
+  Zap,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/site-header";
@@ -95,10 +100,10 @@ function CopyButton({ text }: { text: string }) {
     <button
       onClick={copy}
       className={cn(
-        "flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
+        "flex h-9 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors",
         copied
           ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
-          : "border-white/10 bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
+          : "border-white/10 bg-white/[0.045] text-muted-foreground hover:border-white/15 hover:bg-white/[0.08] hover:text-foreground"
       )}
     >
       {copied ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
@@ -116,9 +121,9 @@ function PdfPreviewFrame({
 }) {
   return (
     // h-full so it fills the sticky wrapper's height
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-white/[0.02]">
+    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0d14]/80 shadow-[0_18px_60px_rgba(0,0,0,0.24)]">
       {/* Title bar — fixed height */}
-      <div className="flex shrink-0 items-center gap-2 border-b border-white/10 px-3 py-2">
+      <div className="flex shrink-0 items-center gap-2 border-b border-white/10 bg-white/[0.035] px-3 py-2.5">
         <Eye className="size-3.5 text-muted-foreground" />
         <span className="text-xs font-medium text-muted-foreground">
           PDF preview
@@ -128,7 +133,7 @@ function PdfPreviewFrame({
         </span>
         <button
           onClick={onHide}
-          className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="ml-auto flex items-center gap-1 rounded-md px-2 py-1 text-xs text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground"
         >
           <EyeOff className="size-3.5" /> Hide
         </button>
@@ -238,13 +243,15 @@ function PdfToBase64() {
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
           className={cn(
-            "relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
+            "relative flex cursor-pointer flex-col items-center justify-center gap-4 rounded-xl border border-dashed px-6 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-colors",
             file
-              ? "border-[#6366f1]/40 bg-[#6366f1]/[0.04]"
-              : "border-white/10 bg-white/[0.02] hover:border-white/20 hover:bg-white/[0.04]"
+              ? "border-primary/40 bg-primary/[0.08]"
+              : "border-white/10 bg-white/[0.025] hover:border-primary/35 hover:bg-white/[0.045]"
           )}
         >
-          <Upload className="size-7 text-muted-foreground" />
+          <div className="grid size-12 place-items-center rounded-xl border border-white/10 bg-white/[0.045]">
+            <Upload className="size-6 text-primary" />
+          </div>
           {file ? (
             <div>
               <p className="font-medium text-foreground">{file.name}</p>
@@ -295,7 +302,7 @@ function PdfToBase64() {
         {previewUrl && !showPreview && (
           <button
             onClick={() => setShowPreview(true)}
-            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm font-medium text-muted-foreground transition hover:bg-white/[0.08] hover:text-foreground"
+            className="flex h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-4 text-sm font-semibold text-muted-foreground transition hover:border-white/15 hover:bg-white/[0.08] hover:text-foreground"
           >
             <Eye className="size-4" /> Show PDF preview
           </button>
@@ -303,19 +310,19 @@ function PdfToBase64() {
 
         {/* Base64 Output */}
         {base64 && (
-          <div className="space-y-3">
+          <div className="space-y-3 rounded-xl border border-white/10 bg-white/[0.025] p-4">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium">
-                Base64 output
-                <span className="ml-2 text-xs text-muted-foreground">
-                  ({formatBytes(base64.length)} string)
-                </span>
-              </p>
+              <div>
+                <p className="text-sm font-semibold">Base64 output</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {formatBytes(base64.length)} string · ready to copy
+                </p>
+              </div>
               <div className="flex items-center gap-2">
                 <CopyButton text={base64} />
                 <button
                   onClick={clear}
-                  className="flex items-center gap-1.5 rounded-md border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-muted-foreground transition hover:bg-white/[0.08] hover:text-foreground"
+                  className="flex h-9 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.045] px-3 text-xs font-semibold text-muted-foreground transition hover:border-white/15 hover:bg-white/[0.08] hover:text-foreground"
                 >
                   <X className="size-3.5" /> Clear
                 </button>
@@ -325,7 +332,7 @@ function PdfToBase64() {
               readOnly
               value={base64}
               rows={10}
-              className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.02] p-3 font-mono text-xs text-muted-foreground focus:outline-none"
+              className="w-full resize-none rounded-lg border border-white/10 bg-[#080a10] p-3 font-mono text-xs leading-5 text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/35"
             />
           </div>
         )}
@@ -459,9 +466,9 @@ function Base64ToPdf() {
       {/* ── Controls column ─────────────────────────────────── */}
       <div className="space-y-5">
         {/* Filename */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Output filename</label>
-          <div className="flex h-10 items-center overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] pr-3">
+        <div className="space-y-1.5 rounded-xl border border-white/10 bg-white/[0.025] p-4">
+          <label className="text-sm font-semibold">Output filename</label>
+          <div className="flex h-11 items-center overflow-hidden rounded-lg border border-white/10 bg-[#080a10] pr-3">
             <input
               type="text"
               value={filename}
@@ -494,7 +501,7 @@ function Base64ToPdf() {
             }}
             rows={10}
             placeholder="Paste your Base64 string here… (raw Base64, no data:… prefix)"
-            className="w-full resize-none rounded-lg border border-white/10 bg-white/[0.02] p-3 font-mono text-xs text-muted-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-white/10"
+            className="w-full resize-none rounded-lg border border-white/10 bg-[#080a10] p-3 font-mono text-xs leading-5 text-muted-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/35"
           />
           {/* Size info */}
           {estBytes > 0 && (
@@ -537,10 +544,10 @@ function Base64ToPdf() {
             }
             disabled={isDownloading || estBytes > MAX_PREVIEW_PDF_BYTES}
             className={cn(
-              "flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition disabled:opacity-40",
+              "flex h-11 items-center gap-2 rounded-lg border px-4 text-sm font-semibold transition disabled:opacity-40",
               hasSidePreview
-                ? "border-[#6366f1]/40 bg-[#6366f1]/10 text-[#6366f1]"
-                : "border-white/10 bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08] hover:text-foreground"
+                ? "border-primary/40 bg-primary/10 text-primary"
+                : "border-white/10 bg-white/[0.045] text-muted-foreground hover:border-white/15 hover:bg-white/[0.08] hover:text-foreground"
             )}
           >
             {hasSidePreview ? (
@@ -555,10 +562,10 @@ function Base64ToPdf() {
             onClick={handleDownload}
             disabled={isDownloading}
             className={cn(
-              "flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium transition disabled:opacity-60",
+              "flex h-11 items-center gap-2 rounded-lg px-5 text-sm font-semibold transition disabled:opacity-60",
               success
                 ? "bg-emerald-500/20 text-emerald-400"
-                : "bg-[#6366f1] text-white shadow-lg shadow-[#6366f1]/20 hover:bg-[#4f51d4]"
+                : "bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:bg-primary/90"
             )}
           >
             {success ? (
@@ -587,7 +594,7 @@ function Base64ToPdf() {
             </div>
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
               <div
-                className="h-full rounded-full bg-[#6366f1] transition-all duration-100"
+                className="h-full rounded-full bg-primary transition-all duration-100"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -627,48 +634,80 @@ export default function PdfConverterPage() {
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
 
-      <main className="flex-1 px-5 py-8 sm:px-8 lg:px-10">
-        {/* Page header */}
-        <div className="mb-6">
-          <div className="mb-1.5 text-xs text-muted-foreground">
-            Converters / PDF
-          </div>
-          <div className="flex flex-wrap items-end justify-between gap-4">
+      <main className="flex-1 px-5 py-7 sm:px-8 lg:px-10">
+        <div className="mb-6 overflow-hidden rounded-xl border border-white/10 bg-[#0b0d14]/72 shadow-[0_18px_70px_rgba(0,0,0,0.22)]">
+          <div className="flex flex-wrap items-start justify-between gap-5 border-b border-white/10 bg-white/[0.03] p-5 sm:p-6">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">
-                PDF ↔ Base64 Converter
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Convert PDFs to Base64 strings and back. Smaller payloads may use the API (~3.6MB upload cap; PDF→Base64 uses a tighter cap so the JSON response fits); larger inputs stay in your browser.
+              <p className="mb-2 text-xs font-medium text-muted-foreground">
+                Converters / PDF
               </p>
+              <div className="flex items-center gap-3">
+                <span className="grid size-11 place-items-center rounded-xl border border-primary/25 bg-primary/10 text-primary">
+                  <FileText className="size-5" />
+                </span>
+                <div>
+                  <h1 className="text-2xl font-semibold tracking-tight">
+                    PDF ↔ Base64 Converter
+                  </h1>
+                  <p className="mt-1 max-w-3xl text-sm leading-6 text-muted-foreground">
+                    Convert PDFs to Base64 strings and back with preview, copy, and download ready for the files you use all the time.
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-muted-foreground">
-              <span className="size-1.5 shrink-0 rounded-full bg-[#6366f1]" />
-              Hybrid: server when small, browser fallback
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/[0.08] px-3 py-2 text-xs font-medium text-emerald-300">
+              <ShieldCheck className="size-3.5" />
+              Browser fallback for larger files
+            </div>
+          </div>
+          <div className="grid gap-px bg-white/10 sm:grid-cols-3">
+            <div className="bg-[#0b0d14]/90 p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Zap className="size-3.5 text-primary" />
+                Fast repeat use
+              </div>
+              <p className="mt-1 text-sm text-foreground">Drop, preview, copy, or download from one screen.</p>
+            </div>
+            <div className="bg-[#0b0d14]/90 p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <ArrowRightLeft className="size-3.5 text-primary" />
+                Two-way conversion
+              </div>
+              <p className="mt-1 text-sm text-foreground">PDF to Base64 and Base64 back to PDF.</p>
+            </div>
+            <div className="bg-[#0b0d14]/90 p-4">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                <Sparkles className="size-3.5 text-primary" />
+                Clear output
+              </div>
+              <p className="mt-1 text-sm text-foreground">Readable output, file sizing, and stateful actions.</p>
             </div>
           </div>
         </div>
 
-        {/* Tab bar */}
-        <div className="mb-6 flex w-fit gap-1 rounded-lg border border-white/10 bg-white/[0.02] p-1">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id)}
-              className={cn(
-                "rounded-md px-5 py-2 text-sm font-medium transition-colors",
-                tab === t.id
-                  ? "bg-white/10 text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex w-full gap-1 rounded-lg border border-white/10 bg-white/[0.025] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:w-fit">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setTab(t.id)}
+                className={cn(
+                  "flex h-10 flex-1 items-center justify-center rounded-md px-4 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/45 sm:flex-none sm:px-5",
+                  tab === t.id
+                    ? "bg-white/[0.11] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]"
+                    : "text-muted-foreground hover:bg-white/[0.05] hover:text-foreground"
+                )}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Hybrid engine uses the API for small payloads and local conversion when needed.
+          </p>
         </div>
 
-        {/* Panel — full width */}
-        <div className="rounded-xl border border-white/10 bg-card/60 p-6 lg:p-8">
+        <div className="rounded-xl border border-white/10 bg-card/55 p-5 shadow-[0_18px_70px_rgba(0,0,0,0.18)] lg:p-6">
           {tab === "to-base64" ? <PdfToBase64 /> : <Base64ToPdf />}
         </div>
       </main>

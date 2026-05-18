@@ -32,7 +32,7 @@ const SECTIONS = [
     tag: "PDF",
     name: "PDF Tools",
     description:
-      "Merge, split, rotate, compress, and extract pages — powered by pdf-lib, entirely client-side.",
+      "Merge, split, rotate, compress, extract pages, and add visual signatures to PDF forms.",
     href: "/pdf-tools",
     count: `${liveCount("pdf-tools")} tools`,
   },
@@ -66,6 +66,14 @@ const SECTIONS = [
 ];
 
 const WHATS_NEW = [
+  {
+    title: "Sign PDF",
+    description:
+      "Add a drawn or typed visual signature to a PDF form, position it, preview, and download.",
+    href: "/pdf-tools/sign",
+    badge: "New",
+    area: "PDF Tools",
+  },
   {
     title: "QR Generator",
     description:
@@ -145,6 +153,16 @@ export default function HomePage() {
                 Open dev tools
               </Link>
             </div>
+
+            <Link
+              href="/pdf-tools/sign"
+              className="mt-5 inline-flex items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/[0.08] px-3 py-2 text-xs font-semibold text-amber-200 transition hover:border-amber-400/30 hover:bg-amber-500/[0.12]"
+            >
+              <span className="rounded-full bg-amber-400/20 px-1.5 py-0.5 text-[9px] uppercase tracking-wide text-amber-100">
+                New
+              </span>
+              Sign PDF forms with draw, type, and placement controls →
+            </Link>
 
             <p className="mt-8 text-xs text-muted-foreground/50">
               10+ components · 40+ tools · 100+ snippets · zero sign-ups

@@ -45,6 +45,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       { name: "Delete Pages",    description: "Remove specific pages from a PDF document.",           href: "/pdf-tools/delete-pages",   status: "live", emoji: "🗑️", tags: ["PDF", "Pages"] },
       { name: "Extract Pages",   description: "Pull selected pages out into a new PDF.",              href: "/pdf-tools/extract-pages",  status: "live", emoji: "📤", tags: ["PDF", "Pages"] },
       { name: "Compress PDF",    description: "Reduce PDF file size and strip unused metadata.",      href: "/pdf-tools/compress",       status: "live", emoji: "🗜️", tags: ["PDF", "Compress"] },
+      { name: "Sign PDF",        description: "Add a drawn or typed signature to a PDF form.",        href: "/pdf-tools/sign",           status: "live", emoji: "✍️", tags: ["PDF", "Sign", "Form"] },
     ],
   },
   {

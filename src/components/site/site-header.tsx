@@ -213,14 +213,14 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="flex w-full items-center gap-3 px-5 py-3 sm:px-6">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0d14]/90 shadow-[0_1px_0_rgba(255,255,255,0.04),0_18px_50px_rgba(0,0,0,0.28)] backdrop-blur-xl supports-[backdrop-filter]:bg-[#0b0d14]/78">
+      <div className="flex w-full items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
 
         {/* Logo + nav */}
         <div className="flex min-w-0 flex-1 items-center gap-1">
           <Logo />
 
-          <nav className="ml-2 hidden items-center md:flex">
+          <nav className="ml-4 hidden items-center gap-1 rounded-lg border border-white/10 bg-white/[0.035] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] md:flex">
             <NavLink href="/" label="Home" pathname={pathname} exact />
             <NavLink href="/components" label="Components" pathname={pathname} />
 
@@ -234,10 +234,10 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
               <button
                 onClick={() => setOpen((v) => !v)}
                 className={cn(
-                  "flex items-center gap-1 rounded-md px-3 py-1.5 text-sm transition-colors",
+                  "flex h-8 items-center gap-1.5 rounded-md px-3 text-sm font-medium transition-colors",
                   isToolsActive || open
-                    ? "bg-white/[0.06] text-foreground"
-                    : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
+                    ? "bg-white/[0.09] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+                    : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
                 )}
               >
                 Tools
@@ -251,16 +251,17 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
 
               {/* ── Mega-menu ── */}
               {open && (
-                <div className="absolute left-0 top-[calc(100%+0.5rem)] z-50 w-[860px] max-w-[calc(100vw-2rem)] rounded-xl border border-white/10 bg-[#0c0c10] p-5 shadow-2xl ring-1 ring-black/40">
+                <div className="absolute -left-[19rem] top-[calc(100%+0.65rem)] z-50 w-[860px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-white/10 bg-[#0b0d14] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.55)] ring-1 ring-black/50">
                   {/* Close button */}
                   <button
                     onClick={() => setOpen(false)}
-                    className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground/50 hover:text-foreground"
+                    className="absolute right-3 top-3 rounded-md p-1 text-muted-foreground/50 transition-colors hover:bg-white/[0.06] hover:text-foreground"
+                    aria-label="Close tools menu"
                   >
                     <X className="size-3.5" />
                   </button>
 
-                  <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3">
+                  <div className="mb-4 flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.045] px-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                     <Search className="size-3.5 shrink-0 text-muted-foreground/60" />
                     <input
                       value={query}
@@ -280,7 +281,7 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
                   </div>
 
                   {favoriteTools.length > 0 && (
-                    <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/[0.06] p-3">
+                    <div className="mb-4 rounded-lg border border-amber-500/20 bg-amber-500/[0.07] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.035)]">
                       <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-amber-300/90">
                         Favorites
                       </p>
@@ -379,10 +380,11 @@ export function SiteHeader({ children }: { children?: React.ReactNode }) {
             <Link
               href="/account"
               className={cn(
-                "flex rounded-md border border-white/10 p-1.5 text-muted-foreground transition hover:bg-white/[0.06] hover:text-foreground",
-                pathname.startsWith("/account") && "border-white/20 bg-white/[0.06] text-foreground",
+                "flex size-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.035] text-muted-foreground transition hover:border-white/15 hover:bg-white/[0.07] hover:text-foreground",
+                pathname.startsWith("/account") && "border-white/20 bg-white/[0.09] text-foreground",
               )}
               title="Workspace"
+              aria-label="Workspace"
             >
               <LayoutDashboard className="size-4" />
             </Link>
@@ -403,8 +405,8 @@ function HeaderAuth() {
             <button
               type="button"
               className={cn(
-                "rounded-md border border-white/10 bg-white/[0.04] px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition sm:px-3 sm:text-sm",
-                "hover:bg-white/[0.08] hover:text-foreground",
+                "h-9 rounded-lg border border-white/10 bg-white/[0.04] px-2.5 text-xs font-semibold text-muted-foreground transition sm:px-3 sm:text-sm",
+                "hover:border-white/15 hover:bg-white/[0.08] hover:text-foreground",
               )}
             >
               Sign in
@@ -413,7 +415,7 @@ function HeaderAuth() {
           <SignUpButton>
             <button
               type="button"
-              className="rounded-md bg-[#6366f1] px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-[#4f51d4] sm:px-3 sm:text-sm"
+              className="h-9 rounded-lg bg-primary px-2.5 text-xs font-semibold text-primary-foreground shadow-[0_10px_26px_rgba(99,102,241,0.2)] transition hover:bg-primary/90 sm:px-3 sm:text-sm"
             >
               Sign up
             </button>
@@ -425,7 +427,7 @@ function HeaderAuth() {
           afterSignOutUrl="/"
           appearance={{
             elements: {
-              avatarBox: "h-8 w-8",
+              avatarBox: "h-9 w-9 rounded-lg",
             },
           }}
         />
@@ -446,10 +448,10 @@ function NavLink({
     <Link
       href={href}
       className={cn(
-        "rounded-md px-3 py-1.5 text-sm transition-colors",
+        "flex h-8 items-center rounded-md px-3 text-sm font-medium transition-colors",
         active
-          ? "bg-white/[0.06] text-foreground"
-          : "text-muted-foreground hover:bg-white/[0.04] hover:text-foreground"
+          ? "bg-white/[0.09] text-foreground shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+          : "text-muted-foreground hover:bg-white/[0.06] hover:text-foreground"
       )}
     >
       {label}
